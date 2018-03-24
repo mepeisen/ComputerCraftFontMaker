@@ -39,7 +39,7 @@ public class MakeFont{
 		return height;
 	}
 	
-	public static final void saveStr(char[][] text, int fontType, String pngFile, String propertiesFile, int charSize, String fontName) throws IOException {
+	public static final void saveStr(int[][] text, int fontType, String pngFile, String propertiesFile, int charSize, String fontName) throws IOException {
 	    final Font fontNormal = new Font(fontName, fontType, charSize);
 	    final Font fontHalf = new Font(fontName, fontType, charSize/2);
 
@@ -69,31 +69,32 @@ public class MakeFont{
 			System.out.println("Writing line " + row + " of " + pngFile);
 			for (int col = 0; col < text[row].length; col++)
 			{
-				char c = text[row][col];
-				if (Character.isWhitespace(c)) c = ' '; // fix for \t (tab) etc.
-				int cwidth = fmNormal.stringWidth(""+c);
+				int codepoint = text[row][col];
+				 // whitespace fix for \t (tab) etc.
+				String str = Character.isWhitespace(codepoint) ? " " : new StringBuilder().appendCodePoint(codepoint).toString();
+				int cwidth = fmNormal.stringWidth(str);
 				if (cwidth == 0)
 				{
-					System.out.println("Invalid char (zero size) " + (int)c + "@" + cwidth + "px");
-					c = '?';
-					cwidth = fmNormal.stringWidth(""+c);
+					System.out.println("Invalid char (zero size) " + codepoint + "@" + cwidth + "px");
+					str = "?";
+					cwidth = fmNormal.stringWidth(str);
 					count_zero++;
 
 					// draw normal
-					g2d.drawString(""+c, 1 + col*(width + 2) + ((width-cwidth)/2), fmNormal.getAscent() + (row*(height + 2)));
+					g2d.drawString(str, 1 + col*(width + 2) + ((width-cwidth)/2), fmNormal.getAscent() + (row*(height + 2)));
 				}
 				if (cwidth > width)
 				{
-					cwidth = fmHalf.stringWidth(""+c);
+					cwidth = fmHalf.stringWidth(str);
 					if (cwidth > width)
 					{
-						System.out.println("Invalid char (too big) " + (int)c + "@half:" + cwidth + "px");
-						c = '?';
-						cwidth = fmNormal.stringWidth(""+c);
+						System.out.println("Invalid char (too big) " + codepoint + "@half:" + cwidth + "px");
+						str = "?";
+						cwidth = fmNormal.stringWidth(str);
 						count_invalid++;
 
 						// draw normal
-						g2d.drawString(""+c, 1 + col*(width + 2) + ((width-cwidth)/2), fmNormal.getAscent() + (row*(height + 2)));
+						g2d.drawString(str, 1 + col*(width + 2) + ((width-cwidth)/2), fmNormal.getAscent() + (row*(height + 2)));
 					}
 					else
 					{
@@ -102,7 +103,7 @@ public class MakeFont{
 						count_greater++;
 						
 						// draw half
-						g2d.drawString(""+c, 1 + col*(width + 2) + ((width-cwidth)/2), ((height-cheight)/2) + fmNormal.getAscent() + (row*(height + 2)));
+						g2d.drawString(str, 1 + col*(width + 2) + ((width-cwidth)/2), ((height-cheight)/2) + fmNormal.getAscent() + (row*(height + 2)));
 						g2d.setFont(fontNormal);
 					}
 				}
@@ -111,7 +112,7 @@ public class MakeFont{
 					count_normal++;
 
 					// draw normal
-					g2d.drawString(""+c, 1 + col*(width + 2) + ((width-cwidth)/2), fmNormal.getAscent() + (row*(height + 2)));
+					g2d.drawString(str, 1 + col*(width + 2) + ((width-cwidth)/2), fmNormal.getAscent() + (row*(height + 2)));
 				}
 			}
 		}
@@ -146,13 +147,13 @@ public class MakeFont{
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		    ge.registerFont(font1);
 		}
-		final char[][] lines = new char[256][];
+		final int[][] lines = new int[256][];
 		for (int row = 0; row < 256; row++)
 		{
-			lines[row] = new char[256];
+			lines[row] = new int[256];
 			for (int col = 0; col < 256; col++)
 			{
-				lines[row][col] = (char) (row*256 + col);
+				lines[row][col] = row*256 + col;
 			}
 		}
 		
